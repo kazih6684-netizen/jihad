@@ -1,0 +1,88 @@
+{
+  "entities": {
+    "StaffMember": {
+      "title": "Staff Member",
+      "description": "Represents a staff member in the directory",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The unique ID of the staff member"
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the staff member"
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "Senior Team Leader",
+            "Team Leader",
+            "Counselor",
+            "Senior Counselor",
+            "Teacher",
+            "Team Trainer"
+          ],
+          "description": "The official staff category"
+        },
+        "method": {
+          "type": "string",
+          "enum": ["bKash", "Nagad", "Rocket"],
+          "description": "The payment method"
+        },
+        "number": {
+          "type": "string",
+          "description": "The contact/payment number"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the record was created"
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "The UID of the admin who created this record"
+        },
+        "order": {
+          "type": "number",
+          "description": "The display order within the category"
+        }
+      },
+      "required": ["name", "category", "method", "number", "createdAt"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Authorized administrators",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "uid": { "type": "string" }
+      },
+      "required": ["email", "uid"]
+    },
+    "AppSetting": {
+      "title": "App Setting",
+      "description": "Global application settings",
+      "type": "object",
+      "properties": {
+        "content": { "type": "string", "description": "The content of the setting (e.g. notice text)" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["content"]
+    }
+  },
+  "firestore": {
+    "/staff/{staffId}": {
+      "schema": "StaffMember",
+      "description": "Collection of staff members"
+    },
+    "/admins/{adminId}": {
+      "schema": "Admin",
+      "description": "Collection of authorized administrators"
+    },
+    "/settings/{settingId}": {
+      "schema": "AppSetting",
+      "description": "Global application settings like the homepage notice"
+    }
+  }
+}
