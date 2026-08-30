@@ -45,7 +45,9 @@ import {
   PaymentMethod, 
   STAFF_CATEGORIES, 
   PAYMENT_METHODS, 
-  AVATAR_PRESETS 
+  AVATAR_PRESETS,
+  AVATAR_ITEMS,
+  AvatarItem
 } from './types';
 import { cn } from './lib/utils';
 
@@ -91,6 +93,7 @@ export default function App() {
   const [formNumber, setFormNumber] = useState('');
   const [formPhotoUrl, setFormPhotoUrl] = useState('');
   const [showPhotoPresets, setShowPhotoPresets] = useState(false);
+  const [avatarGenderFilter, setAvatarGenderFilter] = useState<'all' | 'boy' | 'girl' | 'bot'>('all');
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [formNotice, setFormNotice] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -354,6 +357,9 @@ export default function App() {
     badgeBg: string;
     badgeBorder: string;
     dotColor: string;
+    numberBox: string;
+    numberIcon: string;
+    copyBtn: string;
   }> = {
     bKash: {
       cardBg: 'bg-white hover:bg-pink-50/30',
@@ -363,6 +369,9 @@ export default function App() {
       badgeBg: 'bg-pink-50 text-pink-700',
       badgeBorder: 'border-pink-200',
       dotColor: 'bg-pink-500',
+      numberBox: 'bg-pink-50/80 hover:bg-pink-100/90 border-pink-200/90 text-pink-900',
+      numberIcon: 'text-pink-600',
+      copyBtn: 'bg-pink-50 hover:bg-pink-100 text-pink-700 border-pink-200',
     },
     Nagad: {
       cardBg: 'bg-white hover:bg-orange-50/30',
@@ -372,6 +381,9 @@ export default function App() {
       badgeBg: 'bg-orange-50 text-orange-700',
       badgeBorder: 'border-orange-200',
       dotColor: 'bg-orange-500',
+      numberBox: 'bg-orange-50/80 hover:bg-orange-100/90 border-orange-200/90 text-orange-900',
+      numberIcon: 'text-orange-600',
+      copyBtn: 'bg-orange-50 hover:bg-orange-100 text-orange-800 border-orange-200',
     },
     Rocket: {
       cardBg: 'bg-white hover:bg-purple-50/30',
@@ -381,6 +393,21 @@ export default function App() {
       badgeBg: 'bg-purple-50 text-purple-700',
       badgeBorder: 'border-purple-200',
       dotColor: 'bg-purple-600',
+      numberBox: 'bg-purple-50/80 hover:bg-purple-100/90 border-purple-200/90 text-purple-900',
+      numberIcon: 'text-purple-600',
+      copyBtn: 'bg-purple-50 hover:bg-purple-100 text-purple-800 border-purple-200',
+    },
+    Upay: {
+      cardBg: 'bg-white hover:bg-amber-50/30',
+      cardBorder: 'border-amber-200/80',
+      cardHoverBorder: 'hover:border-amber-400',
+      avatarBg: 'bg-gradient-to-br from-amber-500 to-yellow-600 text-white shadow-amber-200',
+      badgeBg: 'bg-amber-50 text-amber-800',
+      badgeBorder: 'border-amber-200',
+      dotColor: 'bg-amber-500',
+      numberBox: 'bg-amber-50/80 hover:bg-amber-100/90 border-amber-200/90 text-amber-900',
+      numberIcon: 'text-amber-600',
+      copyBtn: 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-200',
     },
   };
 
@@ -725,9 +752,12 @@ export default function App() {
                             {/* Phone & Actions Row */}
                             <div className="flex items-center justify-between gap-1.5">
                               
-                              {/* Phone Number Display */}
-                              <div className="flex items-center gap-1 text-slate-700 bg-slate-50 hover:bg-slate-100 px-2 py-1 rounded-md border border-slate-200/70 text-[11px] sm:text-xs font-mono font-bold tracking-tight min-w-0">
-                                <Phone size={10} className="text-slate-400 shrink-0" />
+                              {/* Phone Number Display with Payment Method matching colors */}
+                              <div className={cn(
+                                "flex items-center gap-1 px-2 py-1 rounded-md border text-[11px] sm:text-xs font-mono font-bold tracking-tight min-w-0 transition-colors shadow-2xs",
+                                theme.numberBox
+                              )}>
+                                <Phone size={10} className={cn("shrink-0", theme.numberIcon)} />
                                 <span className="truncate">{s.number}</span>
                               </div>
 
@@ -756,10 +786,10 @@ export default function App() {
                                 <button
                                   onClick={() => handleCopy(s.id, s.number)}
                                   className={cn(
-                                    "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold transition-all border active:scale-95 cursor-pointer",
+                                    "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold transition-all border active:scale-95 cursor-pointer shadow-2xs",
                                     isCopied
                                       ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
-                                      : "bg-white hover:bg-slate-100 text-slate-700 border-slate-200"
+                                      : cn("hover:shadow-xs", theme.copyBtn)
                                   )}
                                   title="নম্বর কপি করুন"
                                 >
@@ -1021,45 +1051,72 @@ export default function App() {
 
                   {/* Preset Avatars Gallery */}
                   {showPhotoPresets && (
-                    <div className="pt-2 border-t border-slate-200/70 space-y-1.5 animate-fadeIn">
+                    <div className="pt-2 border-t border-slate-200/70 space-y-2 animate-fadeIn">
                       <div className="flex items-center justify-between">
-                        <p className="text-[10px] text-slate-600 font-bold flex items-center gap-1">
+                        <p className="text-[10px] text-slate-700 font-bold flex items-center gap-1">
                           <Sparkles size={11} className="text-amber-500" />
-                          কার্টুন অবতার বেছে নিন (যেকোনো একটিতে ক্লিক করুন):
+                          কার্টুন অবতার পছন্দ করুন:
                         </p>
                       </div>
-                      <div className="grid grid-cols-5 sm:grid-cols-5 gap-2 p-2 bg-white rounded-xl border border-slate-200 max-h-48 overflow-y-auto">
-                        {AVATAR_PRESETS.map((presetUrl, idx) => {
-                          const isSelected = formPhotoUrl === presetUrl;
-                          return (
-                            <button
-                              key={idx}
-                              type="button"
-                              onClick={() => {
-                                setFormPhotoUrl(presetUrl);
-                              }}
-                              className={cn(
-                                "relative aspect-square rounded-xl p-1 bg-slate-50 hover:bg-indigo-50/50 border-2 transition-all hover:scale-105 cursor-pointer flex items-center justify-center",
-                                isSelected ? "border-indigo-600 ring-2 ring-indigo-200 bg-indigo-50" : "border-slate-200/80 hover:border-slate-300"
-                              )}
-                              title={`কার্টুন অবতার #${idx + 1}`}
-                            >
-                              <img
-                                src={presetUrl}
-                                alt={`Cartoon Avatar ${idx + 1}`}
-                                referrerPolicy="no-referrer"
-                                className="w-full h-full object-contain"
-                              />
-                              {isSelected && (
-                                <div className="absolute inset-0 bg-indigo-600/30 rounded-lg flex items-center justify-center text-white backdrop-blur-[1px]">
-                                  <div className="w-4 h-4 bg-indigo-600 rounded-full flex items-center justify-center shadow-xs">
-                                    <Check size={10} className="stroke-[3] text-white" />
+
+                      {/* Gender / Category Filter Tabs */}
+                      <div className="flex items-center gap-1 overflow-x-auto pb-1">
+                        {[
+                          { id: 'all', label: `সবগুলো (${AVATAR_ITEMS.length})` },
+                          { id: 'boy', label: `👦 ছেলে (${AVATAR_ITEMS.filter(i => i.gender === 'boy').length})` },
+                          { id: 'girl', label: `👧 মেয়ে (${AVATAR_ITEMS.filter(i => i.gender === 'girl').length})` },
+                          { id: 'bot', label: `🤖 রোবট (${AVATAR_ITEMS.filter(i => i.gender === 'bot').length})` },
+                        ].map(tab => (
+                          <button
+                            key={tab.id}
+                            type="button"
+                            onClick={() => setAvatarGenderFilter(tab.id as any)}
+                            className={cn(
+                              "px-2 py-1 rounded-md text-[10px] font-bold shrink-0 transition-all border cursor-pointer",
+                              avatarGenderFilter === tab.id
+                                ? "bg-indigo-600 text-white border-indigo-600 shadow-2xs"
+                                : "bg-white hover:bg-slate-100 text-slate-600 border-slate-200"
+                            )}
+                          >
+                            {tab.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="grid grid-cols-6 sm:grid-cols-6 gap-1.5 p-2 bg-white rounded-xl border border-slate-200 max-h-52 overflow-y-auto">
+                        {AVATAR_ITEMS
+                          .filter(item => avatarGenderFilter === 'all' || item.gender === avatarGenderFilter)
+                          .map((item, idx) => {
+                            const isSelected = formPhotoUrl === item.url;
+                            return (
+                              <button
+                                key={idx}
+                                type="button"
+                                onClick={() => {
+                                  setFormPhotoUrl(item.url);
+                                }}
+                                className={cn(
+                                  "relative aspect-square rounded-xl p-1 bg-slate-50 hover:bg-indigo-50/60 border-2 transition-all hover:scale-105 cursor-pointer flex items-center justify-center",
+                                  isSelected ? "border-indigo-600 ring-2 ring-indigo-200 bg-indigo-50" : "border-slate-200/80 hover:border-slate-300"
+                                )}
+                                title={item.label}
+                              >
+                                <img
+                                  src={item.url}
+                                  alt={item.label}
+                                  referrerPolicy="no-referrer"
+                                  className="w-full h-full object-contain"
+                                />
+                                {isSelected && (
+                                  <div className="absolute inset-0 bg-indigo-600/30 rounded-lg flex items-center justify-center text-white backdrop-blur-[1px]">
+                                    <div className="w-4 h-4 bg-indigo-600 rounded-full flex items-center justify-center shadow-xs">
+                                      <Check size={10} className="stroke-[3] text-white" />
+                                    </div>
                                   </div>
-                                </div>
-                              )}
-                            </button>
-                          );
-                        })}
+                                )}
+                              </button>
+                            );
+                          })}
                       </div>
                     </div>
                   )}
@@ -1112,7 +1169,7 @@ export default function App() {
                   <label className="block text-[11px] font-bold text-slate-600 mb-1">
                     পেমেন্ট মেথড (Payment Method)
                   </label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-4 gap-1.5">
                     {PAYMENT_METHODS.map(m => {
                       const isSelected = formMethod === m;
                       return (
@@ -1121,13 +1178,15 @@ export default function App() {
                           type="button"
                           onClick={() => setFormMethod(m)}
                           className={cn(
-                            "py-1.5 px-2 rounded-lg text-xs font-bold border transition-all text-center cursor-pointer",
+                            "py-1.5 px-1 rounded-lg text-xs font-bold border transition-all text-center cursor-pointer",
                             isSelected
                               ? m === 'bKash' 
                                 ? 'bg-pink-600 text-white border-pink-600 shadow-xs'
                                 : m === 'Nagad'
                                 ? 'bg-orange-600 text-white border-orange-600 shadow-xs'
-                                : 'bg-purple-600 text-white border-purple-600 shadow-xs'
+                                : m === 'Rocket'
+                                ? 'bg-purple-600 text-white border-purple-600 shadow-xs'
+                                : 'bg-amber-500 text-slate-950 font-black border-amber-500 shadow-xs'
                               : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
                           )}
                         >
