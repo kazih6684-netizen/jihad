@@ -22,65 +22,109 @@ export interface StaffMember {
 
 export interface AvatarItem {
   url: string;
-  gender: 'boy' | 'girl' | 'bot';
+  gender: 'boy' | 'girl';
   label: string;
 }
 
+export const BOY_AVATARS: AvatarItem[] = [
+  { url: '/avatars/boy_1.jpg', gender: 'boy', label: 'ছেলে কার্টুন ১ (ব্লু হুডি)' },
+  { url: '/avatars/boy_2.jpg', gender: 'boy', label: 'ছেলে কার্টুন ২ (স্মার্ট চশমা)' },
+  { url: '/avatars/boy_3.jpg', gender: 'boy', label: 'ছেলে কার্টুন ৩ (স্পোর্টি জ্যাকেট)' },
+  { url: '/avatars/boy_4.jpg', gender: 'boy', label: 'ছেলে কার্টুন ৪ (ফরমাল শার্ট)' },
+  { url: '/avatars/boy_5.jpg', gender: 'boy', label: 'ছেলে কার্টুন ৫ (স্টাইলিশ জ্যাকেট)' },
+  { url: '/avatars/boy_6.jpg', gender: 'boy', label: 'ছেলে কার্টুন ৬ (মেরুন হুডি)' },
+  { url: '/avatars/boy_7.jpg', gender: 'boy', label: 'ছেলে কার্টুন ৭ (ব্লেজার ও চশমা)' },
+  { url: '/avatars/boy_8.jpg', gender: 'boy', label: 'ছেলে কার্টুন ৮ (অ্যাথলেটিক লুক)' },
+  { url: '/avatars/boy_9.jpg', gender: 'boy', label: 'ছেলে কার্টুন ৯ (টার্টলনেক সোয়েটার)' },
+  { url: '/avatars/boy_10.jpg', gender: 'boy', label: 'ছেলে কার্টুন ১০ (অলিভ জ্যাকেট)' },
+];
+
+export const GIRL_AVATARS: AvatarItem[] = [
+  { url: '/avatars/girl_1.jpg', gender: 'girl', label: 'মেয়ে কার্টুন ১ (গোলাপি সোয়েটার)' },
+  { url: '/avatars/girl_2.jpg', gender: 'girl', label: 'মেয়ে কার্টুন ২ (হলুদ হুডি ও পনিটেল)' },
+  { url: '/avatars/girl_3.jpg', gender: 'girl', label: 'মেয়ে কার্টুন ৩ (স্মার্ট চশমা ও সোয়েটার)' },
+  { url: '/avatars/girl_4.jpg', gender: 'girl', label: 'মেয়ে কার্টুন ৪ (সবুজ কুর্তি ও বিনুনি)' },
+  { url: '/avatars/girl_5.jpg', gender: 'girl', label: 'মেয়ে কার্টুন ৫ (ডেনিম ভেস্ট ও বব কাট)' },
+  { url: '/avatars/girl_6.jpg', gender: 'girl', label: 'মেয়ে কার্টুন ৬ (গোলাপি হিজাব পরিহিতা)' },
+  { url: '/avatars/girl_7.jpg', gender: 'girl', label: 'মেয়ে কার্টুন ৭ (মিন্ট গ্রিন শার্ট)' },
+  { url: '/avatars/girl_8.jpg', gender: 'girl', label: 'মেয়ে কার্টুন ৮ (কমলা ব্লেজার)' },
+  { url: '/avatars/girl_9.jpg', gender: 'girl', label: 'মেয়ে কার্টুন ৯ (নীল জ্যাকেট ও খোঁপায় চুল)' },
+  { url: '/avatars/girl_10.jpg', gender: 'girl', label: 'মেয়ে কার্টুন ১০ (মার্জিত ভায়োলেট শার্ট)' },
+];
+
 export const AVATAR_ITEMS: AvatarItem[] = [
-  // Boys
-  { url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Felix&backgroundColor=b6e3f4,c0aede,d1d4f9', gender: 'boy', label: 'Felix (Boy)' },
-  { url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Oliver&backgroundColor=b6e3f4,c0aede,d1d4f9', gender: 'boy', label: 'Oliver (Boy)' },
-  { url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Milo&backgroundColor=b6e3f4,c0aede,d1d4f9', gender: 'boy', label: 'Milo (Boy)' },
-  { url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Leo&backgroundColor=b6e3f4,c0aede,d1d4f9', gender: 'boy', label: 'Leo (Boy)' },
-  { url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Aiden&backgroundColor=b6e3f4,c0aede,d1d4f9', gender: 'boy', label: 'Aiden (Boy)' },
-  { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jack&backgroundColor=b6e3f4,d1d4f9', gender: 'boy', label: 'Jack (Boy)' },
-  { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sam&backgroundColor=b6e3f4,d1d4f9', gender: 'boy', label: 'Sam (Boy)' },
-  { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Lucas&backgroundColor=b6e3f4,d1d4f9', gender: 'boy', label: 'Lucas (Boy)' },
-  { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Max&backgroundColor=b6e3f4,d1d4f9', gender: 'boy', label: 'Max (Boy)' },
-  { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ethan&backgroundColor=b6e3f4,d1d4f9', gender: 'boy', label: 'Ethan (Boy)' },
-  { url: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Alexander&backgroundColor=b6e3f4,c0aede', gender: 'boy', label: 'Alexander (Boy)' },
-  { url: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Jasper&backgroundColor=b6e3f4,c0aede', gender: 'boy', label: 'Jasper (Boy)' },
-  { url: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Noah&backgroundColor=b6e3f4,c0aede', gender: 'boy', label: 'Noah (Boy)' },
-  { url: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Liam&backgroundColor=b6e3f4,c0aede', gender: 'boy', label: 'Liam (Boy)' },
-  { url: 'https://api.dicebear.com/7.x/micah/svg?seed=Caleb&backgroundColor=b6e3f4,c0aede', gender: 'boy', label: 'Caleb (Boy)' },
-  { url: 'https://api.dicebear.com/7.x/micah/svg?seed=Daniel&backgroundColor=b6e3f4,c0aede', gender: 'boy', label: 'Daniel (Boy)' },
-
-  // Girls
-  { url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Aneka&backgroundColor=ffd5dc,ffdfbf,c0aede', gender: 'girl', label: 'Aneka (Girl)' },
-  { url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Bella&backgroundColor=ffd5dc,ffdfbf,c0aede', gender: 'girl', label: 'Bella (Girl)' },
-  { url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Zoe&backgroundColor=ffd5dc,ffdfbf,c0aede', gender: 'girl', label: 'Zoe (Girl)' },
-  { url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Sophia&backgroundColor=ffd5dc,ffdfbf,c0aede', gender: 'girl', label: 'Sophia (Girl)' },
-  { url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Lily&backgroundColor=ffd5dc,ffdfbf,c0aede', gender: 'girl', label: 'Lily (Girl)' },
-  { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Luna&backgroundColor=ffd5dc,ffdfbf', gender: 'girl', label: 'Luna (Girl)' },
-  { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Emma&backgroundColor=ffd5dc,ffdfbf', gender: 'girl', label: 'Emma (Girl)' },
-  { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mia&backgroundColor=ffd5dc,ffdfbf', gender: 'girl', label: 'Mia (Girl)' },
-  { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Chloe&backgroundColor=ffd5dc,ffdfbf', gender: 'girl', label: 'Chloe (Girl)' },
-  { url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ruby&backgroundColor=ffd5dc,ffdfbf', gender: 'girl', label: 'Ruby (Girl)' },
-  { url: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Elena&backgroundColor=ffd5dc,ffdfbf', gender: 'girl', label: 'Elena (Girl)' },
-  { url: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Maya&backgroundColor=ffd5dc,ffdfbf', gender: 'girl', label: 'Maya (Girl)' },
-  { url: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Nora&backgroundColor=ffd5dc,ffdfbf', gender: 'girl', label: 'Nora (Girl)' },
-  { url: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Aria&backgroundColor=ffd5dc,ffdfbf', gender: 'girl', label: 'Aria (Girl)' },
-  { url: 'https://api.dicebear.com/7.x/micah/svg?seed=Grace&backgroundColor=ffd5dc,ffdfbf', gender: 'girl', label: 'Grace (Girl)' },
-  { url: 'https://api.dicebear.com/7.x/micah/svg?seed=Harper&backgroundColor=ffd5dc,ffdfbf', gender: 'girl', label: 'Harper (Girl)' },
-
-  // Mascots & Robots
-  { url: 'https://api.dicebear.com/7.x/bottts/svg?seed=Pixel&backgroundColor=b6e3f4', gender: 'bot', label: 'Pixel (Robot)' },
-  { url: 'https://api.dicebear.com/7.x/bottts/svg?seed=Sparky&backgroundColor=ffd5dc', gender: 'bot', label: 'Sparky (Robot)' },
-  { url: 'https://api.dicebear.com/7.x/bottts/svg?seed=Ziggy&backgroundColor=d1d4f9', gender: 'bot', label: 'Ziggy (Robot)' },
-  { url: 'https://api.dicebear.com/7.x/bottts/svg?seed=Turbo&backgroundColor=ffdfbf', gender: 'bot', label: 'Turbo (Robot)' }
+  ...BOY_AVATARS,
+  ...GIRL_AVATARS,
 ];
 
 export const AVATAR_PRESETS = AVATAR_ITEMS.map(item => item.url);
+
+// Female name indicators in Bengali & English
+const FEMALE_KEYWORDS = [
+  'আক্তার', 'খাতুন', 'বেগম', 'সুলতানা', 'জাহান', 'ফারহানা', 'সাদিয়া', 'নুসরাত', 
+  'মারিয়া', 'ফাতেমা', 'আয়েশা', 'জান্নাত', 'মিম', 'নাজমা', 'রোকসানা', 'শারমিন', 
+  'তানজিলা', 'রুবিনা', 'লাবণী', 'সুমাইয়া', 'তাসনিম', 'সোনিয়া', 'শায়লা', 'জেরিন', 
+  'সুমি', 'নিপা', 'আফসানা', 'লুবনা', 'তন্বী', 'তৃষা', 'মৌ', 'প্রিয়া', 'রিতা', 
+  'পূজা', 'দীপা', 'বৃষ্টি', 'নদী', 'মেহজাবিন', 'নুহা', 'রোদেলা', 'মিতু', 'ঋতু',
+  'akter', 'khatun', 'begum', 'sultana', 'jahan', 'farhana', 'sadia', 'nusrat',
+  'maria', 'fatema', 'ayesha', 'jannat', 'mim', 'nazma', 'sharmin', 'sumaiya',
+  'tasnim', 'sonia', 'zerin', 'sumi', 'nipa', 'mitu', 'ritu', 'priya', 'pooja'
+];
+
+export function isLikelyFemale(name: string): boolean {
+  if (!name) return false;
+  const lower = name.toLowerCase();
+  return FEMALE_KEYWORDS.some(k => lower.includes(k));
+}
+
+function simpleHash(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
+export function getStaffCartoonAvatar(member: { id?: string; name: string; photoUrl?: string }): string {
+  if (member.photoUrl && !member.photoUrl.includes('dicebear.com')) {
+    return member.photoUrl;
+  }
+
+  const isFemale = isLikelyFemale(member.name);
+  const pool = isFemale ? GIRL_AVATARS : BOY_AVATARS;
+  const key = (member.id || '') + (member.name || 'user');
+  const index = simpleHash(key) % pool.length;
+  return pool[index].url;
+}
 
 
 export const STAFF_CATEGORIES: StaffCategory[] = [
   'Senior Team Leader',
   'Team Leader',
-  'Counselor',
   'Senior Counselor',
+  'Counselor',
   'Teacher',
   'Team Trainer'
 ];
+
+export const CATEGORY_HIERARCHY_ORDER: Record<StaffCategory, number> = {
+  'Senior Team Leader': 1,
+  'Team Leader': 2,
+  'Senior Counselor': 3,
+  'Counselor': 4,
+  'Teacher': 5,
+  'Team Trainer': 6,
+};
+
+export const CATEGORY_TITLE_BN: Record<StaffCategory, { bn: string; short: string; symbol: string }> = {
+  'Senior Team Leader': { bn: 'সিনিয়র টিম লিডার (এসটিএল / STL)', short: 'STL', symbol: '👑' },
+  'Team Leader': { bn: 'টিম লিডার (টিএল / TL)', short: 'TL', symbol: '👔' },
+  'Senior Counselor': { bn: 'সিনিয়র কাউন্সেলর (Senior Counselor)', short: 'SC', symbol: '🎖️' },
+  'Counselor': { bn: 'কাউন্সেলর (Counselor)', short: 'CO', symbol: '📋' },
+  'Teacher': { bn: 'শিক্ষক (Teacher)', short: 'TR', symbol: '🎓' },
+  'Team Trainer': { bn: 'টিম ট্রেইনার (Team Trainer)', short: 'TT', symbol: '🚀' },
+};
 
 export const PAYMENT_METHODS: PaymentMethod[] = ['bKash', 'Nagad', 'Rocket', 'Upay'];
 

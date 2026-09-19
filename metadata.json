@@ -1,6 +1,6 @@
 {
-  "name": "Unity Portal Official Directory",
-  "description": "A dynamic real-time directory for Unity Earning staff members with admin management capabilities.",
+  "name": "Unity Earning Payment Portal",
+  "description": "Unity Earning Payment Portal - সিকিউর পিন সহ অফিসিয়াল স্টাফ স্যালারি ও পেমেন্ট রেকর্ড পোর্টাল এবং মোবাইল ফ্রেম সাইজ PDF ডাউনলোড সুবিধা।",
   "requestFramePermissions": [],
   "majorCapabilities": []
 }

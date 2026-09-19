@@ -35,7 +35,10 @@ import {
   Camera,
   Upload,
   Sparkles,
-  Image as ImageIcon
+  Image as ImageIcon,
+  FileDown,
+  Smartphone,
+  Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { db, handleFirestoreError, OperationType } from './lib/firebase';
@@ -47,18 +50,32 @@ import {
   PAYMENT_METHODS, 
   AVATAR_PRESETS,
   AVATAR_ITEMS,
-  AvatarItem
+  BOY_AVATARS,
+  GIRL_AVATARS,
+  AvatarItem,
+  getStaffCartoonAvatar,
+  isLikelyFemale,
+  CATEGORY_TITLE_BN
 } from './types';
 import { cn } from './lib/utils';
+import { PinLockScreen } from './components/PinLockScreen';
+import { PortalPinModal } from './components/PortalPinModal';
+import { exportStaffDirectoryPdf, exportStaffDirectoryImage } from './utils/pdfExport';
 
 // Hardcoded Master Admin PIN as requested
 const ADMIN_PIN = '212650';
 const ADMIN_STORAGE_KEY = 'unity_admin_pin_session';
+const PORTAL_STORAGE_KEY = 'unity_portal_session_unlocked';
 
 export default function App() {
   const [isAdmin, setIsAdmin] = useState<boolean>(() => {
     return localStorage.getItem(ADMIN_STORAGE_KEY) === 'authenticated';
   });
+  const [portalUnlocked, setPortalUnlocked] = useState<boolean>(() => {
+    return sessionStorage.getItem(PORTAL_STORAGE_KEY) === 'unlocked' || localStorage.getItem(ADMIN_STORAGE_KEY) === 'authenticated';
+  });
+  const [portalPin, setPortalPin] = useState<string>('1234');
+  const [isPortalPinModalOpen, setIsPortalPinModalOpen] = useState(false);
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
@@ -93,7 +110,7 @@ export default function App() {
   const [formNumber, setFormNumber] = useState('');
   const [formPhotoUrl, setFormPhotoUrl] = useState('');
   const [showPhotoPresets, setShowPhotoPresets] = useState(false);
-  const [avatarGenderFilter, setAvatarGenderFilter] = useState<'all' | 'boy' | 'girl' | 'bot'>('all');
+  const [avatarGenderFilter, setAvatarGenderFilter] = useState<'all' | 'boy' | 'girl'>('all');
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [formNotice, setFormNotice] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -190,12 +207,27 @@ export default function App() {
     return unsubscribe;
   }, []);
 
-  // Handle PIN Login
+  // Real-time Portal PIN Listener
+  useEffect(() => {
+    const unsubscribe = onSnapshot(doc(db, 'settings', 'portal_pin'), (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        if (data?.pin) {
+          setPortalPin(String(data.pin));
+        }
+      }
+    });
+    return unsubscribe;
+  }, []);
+
+  // Handle Master Admin PIN Login
   const handlePinSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (pinInput.trim() === ADMIN_PIN) {
       setIsAdmin(true);
+      setPortalUnlocked(true);
       localStorage.setItem(ADMIN_STORAGE_KEY, 'authenticated');
+      sessionStorage.setItem(PORTAL_STORAGE_KEY, 'unlocked');
       setIsPinModalOpen(false);
       setPinInput('');
       setPinError(false);
@@ -210,6 +242,56 @@ export default function App() {
     setIsAdmin(false);
     localStorage.removeItem(ADMIN_STORAGE_KEY);
     showToast('এডমিন মোড থেকে লগআউট করা হয়েছে');
+  };
+
+  const handlePortalUnlockSuccess = () => {
+    setPortalUnlocked(true);
+    sessionStorage.setItem(PORTAL_STORAGE_KEY, 'unlocked');
+    showToast('স্বাগতম! পেমেন্ট পোর্টালে সফলভাবে প্রবেশ করেছেন');
+  };
+
+  const handlePortalLock = () => {
+    setPortalUnlocked(false);
+    sessionStorage.removeItem(PORTAL_STORAGE_KEY);
+    showToast('পেমেন্ট পোর্টাল লক করা হয়েছে');
+  };
+
+  const [isExporting, setIsExporting] = useState<boolean>(false);
+
+  const handleExportPdf = async () => {
+    if (staff.length === 0) {
+      showToast('ডাউনলোড করার মতো কোনো স্টাফ তথ্য নেই');
+      return;
+    }
+    try {
+      setIsExporting(true);
+      showToast('বাংলা নাম সহ মোবাইল ফ্রেমের PDF তৈরি হচ্ছে...');
+      await exportStaffDirectoryPdf(staff);
+      showToast('বাংলা নাম সহ মোবাইল ফ্রেম সাইজ PDF ডাউনলোড সম্পন্ন!');
+    } catch (err) {
+      console.error('PDF error', err);
+      showToast('PDF ডাউনলোডে সমস্যা হয়েছে');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleExportImage = async () => {
+    if (staff.length === 0) {
+      showToast('ডাউনলোড করার মতো কোনো স্টাফ তথ্য নেই');
+      return;
+    }
+    try {
+      setIsExporting(true);
+      showToast('বাংলা নাম সহ মোবাইল ফ্রেমের HD ছবি তৈরি হচ্ছে...');
+      await exportStaffDirectoryImage(staff);
+      showToast('বাংলা নাম সহ অফিশিয়াল ছবি (HD Image) ডাউনলোড সম্পন্ন!');
+    } catch (err) {
+      console.error('Image export error', err);
+      showToast('ছবি ডাউনলোডে সমস্যা হয়েছে');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleCopy = (id: string, text: string) => {
@@ -256,7 +338,7 @@ export default function App() {
     if (formPhotoUrl.trim()) {
       staffData.photoUrl = formPhotoUrl.trim();
     } else {
-      staffData.photoUrl = '';
+      staffData.photoUrl = getStaffCartoonAvatar({ name: formName.trim() });
     }
 
     try {
@@ -327,8 +409,8 @@ export default function App() {
     const groups: Record<StaffCategory, StaffMember[]> = {
       'Senior Team Leader': [],
       'Team Leader': [],
-      'Counselor': [],
       'Senior Counselor': [],
+      'Counselor': [],
       'Teacher': [],
       'Team Trainer': [],
     };
@@ -414,27 +496,144 @@ export default function App() {
   const categoryBanglaNum: Record<StaffCategory, string> = {
     'Senior Team Leader': '০১',
     'Team Leader': '০২',
-    'Counselor': '০৩',
-    'Senior Counselor': '০৪',
+    'Senior Counselor': '০৩',
+    'Counselor': '০৪',
     'Teacher': '০৫',
     'Team Trainer': '০৬',
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-3">
+      <div className="min-h-screen neu-base flex flex-col items-center justify-center gap-3">
         <motion.div 
           animate={{ rotate: 360 }}
           transition={{ duration: 0.9, repeat: Infinity, ease: 'linear' }}
-          className="w-10 h-10 border-3 border-slate-200 border-t-indigo-600 rounded-full"
+          className="w-10 h-10 border-3 border-slate-300 border-t-indigo-600 rounded-full"
         />
         <p className="text-xs font-semibold text-slate-500 tracking-wider">লোড হচ্ছে...</p>
       </div>
     );
   }
 
+  // 1. PIN Lock Screen Gate (Required before entering directory)
+  if (!portalUnlocked && !isAdmin) {
+    return (
+      <>
+        <PinLockScreen
+          correctPin={portalPin}
+          onSuccess={handlePortalUnlockSuccess}
+          onAdminLoginClick={() => {
+            setPinInput('');
+            setPinError(false);
+            setIsPinModalOpen(true);
+            setTimeout(() => pinInputRef.current?.focus(), 150);
+          }}
+        />
+
+        {/* Toast Notification */}
+        <AnimatePresence>
+          {toastMessage && (
+            <motion.div 
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white text-xs font-medium px-4 py-2.5 rounded-full shadow-xl flex items-center gap-2 border border-slate-700 backdrop-blur-md"
+            >
+              <CheckCircle2 size={15} className="text-emerald-400" />
+              <span>{toastMessage}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Admin Login Modal (Directly accessible from PIN screen) */}
+        <AnimatePresence>
+          {isPinModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsPinModalOpen(false)}
+                className="absolute inset-0 bg-slate-950/60 backdrop-blur-xs"
+              />
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                className={cn(
+                  "relative bg-white w-full max-w-xs rounded-3xl shadow-2xl p-5 border border-slate-200 transition-all",
+                  pinError && "animate-shake border-red-400 ring-2 ring-red-100"
+                )}
+              >
+                <div className="text-center space-y-2 mb-4">
+                  <div className="w-12 h-12 rounded-2xl neu-inset flex items-center justify-center mx-auto text-indigo-600">
+                    <Lock size={20} />
+                  </div>
+                  <h3 className="font-extrabold text-sm text-slate-900">মাস্টার এডমিন লগইন</h3>
+                  <p className="text-[11px] text-slate-500 font-medium">
+                    এডমিন প্যানেলে প্রবেশের জন্য নির্ধারিত ৬ সংখ্যার পিন কোড দিন
+                  </p>
+                </div>
+
+                <form onSubmit={handlePinSubmit} className="space-y-3">
+                  <div className="relative">
+                    <input
+                      ref={pinInputRef}
+                      id="admin-pin-field"
+                      type={showPinText ? 'text' : 'password'}
+                      maxLength={10}
+                      value={pinInput}
+                      onChange={(e) => {
+                        setPinInput(e.target.value);
+                        if (pinError) setPinError(false);
+                      }}
+                      placeholder="Admin PIN"
+                      className="w-full bg-slate-50 border border-slate-200 focus:border-indigo-600 focus:bg-white rounded-xl px-3 py-2.5 text-center text-lg tracking-widest font-mono font-bold outline-none transition-all"
+                      autoFocus
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPinText(!showPinText)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                    >
+                      {showPinText ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+
+                  {pinError && (
+                    <div className="flex items-center justify-center gap-1 text-red-600 text-[11px] font-bold">
+                      <AlertCircle size={13} />
+                      <span>ভুল পিন কোড! সঠিক পিন দিন।</span>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setIsPinModalOpen(false)}
+                      className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold py-2.5 rounded-xl transition-colors cursor-pointer"
+                    >
+                      বাতিল
+                    </button>
+                    <button
+                      id="submit-pin-btn"
+                      type="submit"
+                      className="flex-1 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold py-2.5 rounded-xl shadow-xs transition-all cursor-pointer"
+                    >
+                      লগইন
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+      </>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50/80 text-slate-900 selection:bg-indigo-100 font-sans pb-16">
+    <div className="min-h-screen neu-base text-slate-900 selection:bg-indigo-100 font-sans pb-16">
       
       {/* Toast Notification */}
       <AnimatePresence>
@@ -451,39 +650,74 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* Top App Bar */}
-      <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 shadow-xs">
-        <div className="max-w-4xl mx-auto px-3 sm:px-4 h-14 flex items-center justify-between gap-2">
+      {/* Top App Bar with Neumorphic Touch */}
+      <header className="bg-white/90 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 shadow-xs">
+        <div className="max-w-4xl mx-auto px-3 sm:px-4 h-15 flex items-center justify-between gap-2">
           
           {/* Logo & Brand */}
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-lg flex items-center justify-center text-white font-black text-sm shadow-sm shadow-indigo-200">
+            <div className="w-8 h-8 rounded-xl neu-flat flex items-center justify-center text-indigo-600 font-black text-sm border border-white/80 shrink-0">
               U
             </div>
             <div>
               <div className="flex items-center gap-1.5">
                 <h1 className="font-extrabold text-sm sm:text-base leading-none text-slate-900 tracking-tight">UNITY EARNING</h1>
-                <span className="bg-indigo-50 text-indigo-700 text-[9px] font-bold px-1.5 py-0.5 rounded border border-indigo-100">
-                  Directory
+                <span className="bg-indigo-50 text-indigo-700 text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-indigo-200">
+                  Payment Portal
                 </span>
               </div>
-              <p className="text-[10px] text-slate-400 font-medium leading-none mt-0.5">অফিশিয়াল স্টাফ ও পেমেন্ট তালিকা</p>
+              <p className="text-[10px] text-slate-500 font-medium leading-none mt-0.5">অফিশিয়াল স্টাফ ও পেমেন্ট রেকর্ড</p>
             </div>
           </div>
 
           {/* Right Action Controls */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            
+            {/* Phone-Frame Official Image & PDF Download Buttons */}
+            <button
+              id="download-image-header-btn"
+              onClick={handleExportImage}
+              disabled={isExporting}
+              className="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white px-2.5 sm:px-3 py-1.5 rounded-xl font-bold text-xs shadow-xs transition-all cursor-pointer disabled:opacity-50"
+              title="বাংলা নাম সহ ফোন ফ্রেমের HD ছবি ডাউনলোড করুন"
+            >
+              {isExporting ? <Loader2 size={13} className="animate-spin" /> : <ImageIcon size={13} />}
+              <span className="hidden sm:inline">ছবি</span>
+              <span className="sm:hidden text-[11px]">ছবি</span>
+            </button>
+
+            <button
+              id="download-pdf-header-btn"
+              onClick={handleExportPdf}
+              disabled={isExporting}
+              className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-2.5 sm:px-3 py-1.5 rounded-xl font-bold text-xs shadow-xs transition-all cursor-pointer disabled:opacity-50"
+              title="বাংলা নাম সহ ফোন ফ্রেম সাইজের অফিশিয়াল PDF ডাউনলোড করুন"
+            >
+              {isExporting ? <Loader2 size={13} className="animate-spin" /> : <FileDown size={13} />}
+              <span className="hidden sm:inline">PDF</span>
+              <span className="sm:hidden text-[11px]">PDF</span>
+            </button>
+
             {isAdmin ? (
               <div className="flex items-center gap-1.5">
-                <span className="hidden sm:inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-md border border-emerald-200">
-                  <ShieldCheck size={12} className="text-emerald-600" />
-                  এডমিন একটিভ
-                </span>
-                
+                {/* Admin Portal PIN Change Button */}
+                <button
+                  id="portal-pin-settings-btn"
+                  onClick={() => setIsPortalPinModalOpen(true)}
+                  className="flex items-center gap-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 px-2 sm:px-2.5 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer"
+                  title="৪ ডিজিটের পোর্টাল এক্সেস পিন পরিবর্তন করুন"
+                >
+                  <KeyRound size={13} className="text-indigo-600" />
+                  <span className="hidden md:inline">পোর্টাল পিন:</span>
+                  <span className="font-mono bg-white px-1.5 py-0.2 rounded-md text-[11px] font-black border border-indigo-200 text-indigo-900">
+                    {portalPin}
+                  </span>
+                </button>
+
                 <button
                   id="add-staff-btn"
                   onClick={() => { resetForm(); setIsModalOpen(true); }}
-                  className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white px-3 py-1.5 rounded-lg font-bold text-xs shadow-xs transition-all cursor-pointer"
+                  className="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white px-2.5 sm:px-3 py-1.5 rounded-xl font-bold text-xs shadow-xs transition-all cursor-pointer"
                   title="নতুন স্টাফ যুক্ত করুন"
                 >
                   <Plus size={14} />
@@ -493,7 +727,7 @@ export default function App() {
                 <button 
                   id="logout-btn"
                   onClick={handleLogout}
-                  className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                  className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
                   title="এডমিন লগআউট"
                 >
                   <LogOut size={16} />
@@ -508,12 +742,22 @@ export default function App() {
                   setIsPinModalOpen(true);
                   setTimeout(() => pinInputRef.current?.focus(), 150);
                 }}
-                className="flex items-center gap-1.5 bg-slate-900 hover:bg-indigo-600 active:scale-95 text-white px-3 py-1.5 rounded-lg font-semibold text-xs transition-all shadow-xs cursor-pointer"
+                className="flex items-center gap-1 bg-slate-900 hover:bg-indigo-600 active:scale-95 text-white px-2.5 sm:px-3 py-1.5 rounded-xl font-semibold text-xs transition-all shadow-xs cursor-pointer"
               >
                 <KeyRound size={13} />
-                <span>এডমিন লগইন</span>
+                <span>এডমিন</span>
               </button>
             )}
+
+            {/* Lock Portal Button */}
+            <button
+              id="lock-portal-header-btn"
+              onClick={handlePortalLock}
+              className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+              title="পোর্টাল লক করুন (PIN স্ক্রিনে ফিরুন)"
+            >
+              <Lock size={15} />
+            </button>
           </div>
         </div>
       </header>
@@ -639,6 +883,53 @@ export default function App() {
           </div>
         </div>
 
+        {/* Neumorphic Official Phone Frame Image & PDF Export Banner */}
+        <div className="neu-flat rounded-2xl p-3.5 sm:p-4 border border-white/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-3.5">
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <div className="w-11 h-11 rounded-2xl neu-inset flex items-center justify-center text-indigo-600 shrink-0">
+              <Smartphone size={22} />
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-xs sm:text-sm font-black text-slate-800 tracking-tight">অফিশিয়াল ফোন ফ্রেম ডিরেক্টরি</span>
+                <span className="bg-emerald-100 text-emerald-800 text-[9px] font-extrabold px-1.5 py-0.5 rounded-md border border-emerald-200">
+                  বাংলা নাম সমর্থিত
+                </span>
+                <span className="bg-indigo-100 text-indigo-800 text-[9px] font-extrabold px-1.5 py-0.5 rounded-md border border-indigo-200">
+                  HD 1080p
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 font-medium leading-tight mt-0.5">
+                সব এমপ্লয়িদের বাংলা নাম, পদবী, মেথড ও নাম্বার সহ মোবাইল সাইজ ছবি ও PDF ডাউনলোড করুন
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+            <button
+              id="download-phone-frame-image-btn"
+              onClick={handleExportImage}
+              disabled={isExporting}
+              className="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-50"
+              title="বাংলা নাম স্পষ্ট সহ মোবাইল ফ্রেমের HD ছবি (PNG) ডাউনলোড করুন"
+            >
+              {isExporting ? <Loader2 size={15} className="animate-spin" /> : <ImageIcon size={15} />}
+              <span>ছবি ডাউনলোড</span>
+            </button>
+
+            <button
+              id="download-phone-frame-pdf-btn"
+              onClick={handleExportPdf}
+              disabled={isExporting}
+              className="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl neu-btn-action font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs active:scale-95 cursor-pointer disabled:opacity-50"
+              title="বাংলা নাম স্পষ্ট সহ মোবাইল ফ্রেমের PDF ডাউনলোড করুন"
+            >
+              {isExporting ? <Loader2 size={15} className="animate-spin" /> : <FileDown size={15} />}
+              <span>PDF ডাউনলোড</span>
+            </button>
+          </div>
+        </div>
+
         {/* Directory Listings */}
         {filteredStaff.length === 0 ? (
           <div className="bg-white rounded-xl border border-slate-200/80 p-8 text-center space-y-2">
@@ -671,7 +962,7 @@ export default function App() {
                       {categoryBanglaNum[category]}
                     </span>
                     <h2 className="font-bold text-sm text-slate-800 tracking-tight">
-                      {category}
+                      {CATEGORY_TITLE_BN[category]?.symbol} {CATEGORY_TITLE_BN[category]?.bn || category}
                     </h2>
                     <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-1.5 py-0.5 rounded border border-slate-200">
                       {members.length} জন
@@ -701,31 +992,21 @@ export default function App() {
                             theme.cardHoverBorder
                           )}
                         >
-                          {/* Colorful Person Avatar or Profile Picture */}
+                          {/* Distinct 3D Cartoon Avatar (Bust Shot: Chest to Head) */}
                           <div className="relative shrink-0">
-                            {s.photoUrl ? (
-                              <img
-                                src={s.photoUrl}
-                                alt={s.name}
-                                referrerPolicy="no-referrer"
-                                className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg object-cover shadow-xs border border-slate-200 group-hover:scale-105 transition-transform"
-                                onError={(e) => {
-                                  // Fallback to hidden and show standard avatar if broken
-                                  e.currentTarget.style.display = 'none';
-                                }}
-                              />
-                            ) : (
-                              <div className={cn(
-                                "w-10 h-10 sm:w-11 sm:h-11 rounded-lg flex items-center justify-center font-bold text-sm shadow-xs transition-transform group-hover:scale-105",
-                                theme.avatarBg
-                              )}>
-                                <UserIcon size={20} strokeWidth={2.2} />
-                              </div>
-                            )}
+                            <img
+                              src={getStaffCartoonAvatar(s)}
+                              alt={s.name}
+                              referrerPolicy="no-referrer"
+                              className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-cover shadow-2xs border border-slate-200/90 bg-slate-100 group-hover:scale-105 transition-transform"
+                              onError={(e) => {
+                                e.currentTarget.src = isLikelyFemale(s.name) ? '/avatars/girl_1.jpg' : '/avatars/boy_1.jpg';
+                              }}
+                            />
                             {/* Status Indicator Dot */}
                             <span 
                               className={cn(
-                                "absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white shadow-xs",
+                                "absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white shadow-xs",
                                 theme.dotColor
                               )} 
                               title={`Payment: ${s.method}`}
@@ -973,7 +1254,7 @@ export default function App() {
                           <img
                             src={formPhotoUrl}
                             alt="Preview"
-                            className="w-12 h-12 rounded-xl object-cover border-2 border-indigo-500 shadow-xs"
+                            className="w-14 h-14 rounded-xl object-cover border-2 border-indigo-600 shadow-sm"
                             onError={(e) => {
                               e.currentTarget.style.display = 'none';
                             }}
@@ -981,16 +1262,27 @@ export default function App() {
                           <button
                             type="button"
                             onClick={() => setFormPhotoUrl('')}
-                            className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full p-0.5 shadow-xs hover:bg-red-700 cursor-pointer"
+                            className="absolute -top-1.5 -right-1.5 bg-red-600 text-white rounded-full p-0.5 shadow-xs hover:bg-red-700 cursor-pointer"
                             title="মুছে ফেলুন"
                           >
-                            <X size={10} />
+                            <X size={12} />
                           </button>
                         </div>
+                      ) : formName.trim() ? (
+                        <div className="relative">
+                          <img
+                            src={getStaffCartoonAvatar({ name: formName.trim() })}
+                            alt="Auto Assigned"
+                            className="w-14 h-14 rounded-xl object-cover border-2 border-emerald-500 shadow-sm"
+                          />
+                          <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-emerald-600 text-[9px] text-white px-1 py-0.5 rounded font-bold whitespace-nowrap shadow-xs">
+                            অটো অবতার
+                          </span>
+                        </div>
                       ) : (
-                        <div className="w-12 h-12 rounded-xl bg-slate-200/90 border border-slate-300 flex flex-col items-center justify-center text-slate-400">
-                          <UserIcon size={20} />
-                          <span className="text-[8px] font-bold text-slate-500">ছবি নেই</span>
+                        <div className="w-14 h-14 rounded-xl bg-slate-100 border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-400">
+                          <UserIcon size={22} />
+                          <span className="text-[9px] font-bold text-slate-500">ছবি নেই</span>
                         </div>
                       )}
                     </div>
@@ -1020,14 +1312,48 @@ export default function App() {
                           setShowUrlInput(false);
                         }}
                         className={cn(
-                          "flex items-center gap-1 border px-2 py-1.5 rounded-lg text-[11px] font-bold shadow-2xs transition-colors cursor-pointer",
+                          "flex items-center gap-1 border px-2.5 py-1.5 rounded-lg text-[11px] font-bold shadow-2xs transition-colors cursor-pointer",
                           showPhotoPresets
                             ? "bg-indigo-600 text-white border-indigo-600"
                             : "bg-white hover:bg-slate-100 text-slate-700 border-slate-200"
                         )}
                       >
                         <Sparkles size={12} className={showPhotoPresets ? "text-white" : "text-amber-500"} />
-                        <span>কার্টুন অবতার ({AVATAR_PRESETS.length}টি)</span>
+                        <span>কার্টুন অবতার ({AVATAR_ITEMS.length}টি)</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowPhotoPresets(true);
+                          setAvatarGenderFilter('boy');
+                          setShowUrlInput(false);
+                        }}
+                        className={cn(
+                          "flex items-center gap-1 border px-2 py-1.5 rounded-lg text-[11px] font-bold shadow-2xs transition-colors cursor-pointer",
+                          showPhotoPresets && avatarGenderFilter === 'boy'
+                            ? "bg-blue-600 text-white border-blue-600"
+                            : "bg-blue-50/70 hover:bg-blue-100 text-blue-700 border-blue-200"
+                        )}
+                      >
+                        <span>👦 ছেলে</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowPhotoPresets(true);
+                          setAvatarGenderFilter('girl');
+                          setShowUrlInput(false);
+                        }}
+                        className={cn(
+                          "flex items-center gap-1 border px-2 py-1.5 rounded-lg text-[11px] font-bold shadow-2xs transition-colors cursor-pointer",
+                          showPhotoPresets && avatarGenderFilter === 'girl'
+                            ? "bg-pink-600 text-white border-pink-600"
+                            : "bg-pink-50/70 hover:bg-pink-100 text-pink-700 border-pink-200"
+                        )}
+                      >
+                        <span>👧 মেয়ে</span>
                       </button>
 
                       <button
@@ -1053,26 +1379,25 @@ export default function App() {
                   {showPhotoPresets && (
                     <div className="pt-2 border-t border-slate-200/70 space-y-2 animate-fadeIn">
                       <div className="flex items-center justify-between">
-                        <p className="text-[10px] text-slate-700 font-bold flex items-center gap-1">
-                          <Sparkles size={11} className="text-amber-500" />
-                          কার্টুন অবতার পছন্দ করুন:
+                        <p className="text-[11px] text-slate-700 font-bold flex items-center gap-1">
+                          <Sparkles size={12} className="text-amber-500" />
+                          কার্টুন প্রোফাইল ছবি পছন্দ করুন (পেট থেকে মাথা পর্যন্ত ৩ডি ছবি):
                         </p>
                       </div>
 
                       {/* Gender / Category Filter Tabs */}
-                      <div className="flex items-center gap-1 overflow-x-auto pb-1">
+                      <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
                         {[
-                          { id: 'all', label: `সবগুলো (${AVATAR_ITEMS.length})` },
-                          { id: 'boy', label: `👦 ছেলে (${AVATAR_ITEMS.filter(i => i.gender === 'boy').length})` },
-                          { id: 'girl', label: `👧 মেয়ে (${AVATAR_ITEMS.filter(i => i.gender === 'girl').length})` },
-                          { id: 'bot', label: `🤖 রোবট (${AVATAR_ITEMS.filter(i => i.gender === 'bot').length})` },
+                          { id: 'all', label: `সবগুলো (${AVATAR_ITEMS.length}টি)` },
+                          { id: 'boy', label: `👦 ছেলে কার্টুন (${BOY_AVATARS.length}টি)` },
+                          { id: 'girl', label: `👧 মেয়ে কার্টুন (${GIRL_AVATARS.length}টি)` },
                         ].map(tab => (
                           <button
                             key={tab.id}
                             type="button"
                             onClick={() => setAvatarGenderFilter(tab.id as any)}
                             className={cn(
-                              "px-2 py-1 rounded-md text-[10px] font-bold shrink-0 transition-all border cursor-pointer",
+                              "px-2.5 py-1 rounded-lg text-[11px] font-bold shrink-0 transition-all border cursor-pointer",
                               avatarGenderFilter === tab.id
                                 ? "bg-indigo-600 text-white border-indigo-600 shadow-2xs"
                                 : "bg-white hover:bg-slate-100 text-slate-600 border-slate-200"
@@ -1083,7 +1408,7 @@ export default function App() {
                         ))}
                       </div>
 
-                      <div className="grid grid-cols-6 sm:grid-cols-6 gap-1.5 p-2 bg-white rounded-xl border border-slate-200 max-h-52 overflow-y-auto">
+                      <div className="grid grid-cols-5 sm:grid-cols-5 gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-200 max-h-60 overflow-y-auto">
                         {AVATAR_ITEMS
                           .filter(item => avatarGenderFilter === 'all' || item.gender === avatarGenderFilter)
                           .map((item, idx) => {
@@ -1096,8 +1421,10 @@ export default function App() {
                                   setFormPhotoUrl(item.url);
                                 }}
                                 className={cn(
-                                  "relative aspect-square rounded-xl p-1 bg-slate-50 hover:bg-indigo-50/60 border-2 transition-all hover:scale-105 cursor-pointer flex items-center justify-center",
-                                  isSelected ? "border-indigo-600 ring-2 ring-indigo-200 bg-indigo-50" : "border-slate-200/80 hover:border-slate-300"
+                                  "group relative aspect-square rounded-xl overflow-hidden border-2 transition-all hover:scale-105 cursor-pointer flex items-center justify-center bg-white shadow-2xs",
+                                  isSelected 
+                                    ? "border-indigo-600 ring-2 ring-indigo-300 shadow-md" 
+                                    : "border-slate-200 hover:border-indigo-400"
                                 )}
                                 title={item.label}
                               >
@@ -1105,14 +1432,16 @@ export default function App() {
                                   src={item.url}
                                   alt={item.label}
                                   referrerPolicy="no-referrer"
-                                  className="w-full h-full object-contain"
+                                  className="w-full h-full object-cover"
                                 />
-                                {isSelected && (
-                                  <div className="absolute inset-0 bg-indigo-600/30 rounded-lg flex items-center justify-center text-white backdrop-blur-[1px]">
-                                    <div className="w-4 h-4 bg-indigo-600 rounded-full flex items-center justify-center shadow-xs">
-                                      <Check size={10} className="stroke-[3] text-white" />
+                                {isSelected ? (
+                                  <div className="absolute inset-0 bg-indigo-600/35 rounded-lg flex items-center justify-center text-white backdrop-blur-[0.5px]">
+                                    <div className="w-5 h-5 bg-indigo-600 rounded-full flex items-center justify-center shadow-md">
+                                      <Check size={12} className="stroke-[3] text-white" />
                                     </div>
                                   </div>
+                                ) : (
+                                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                                 )}
                               </button>
                             );
@@ -1329,6 +1658,17 @@ export default function App() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* 5. Portal PIN Configuration Modal (Admin Only) */}
+      <PortalPinModal
+        isOpen={isPortalPinModalOpen}
+        onClose={() => setIsPortalPinModalOpen(false)}
+        currentPin={portalPin}
+        onSuccess={(newPin) => {
+          setPortalPin(newPin);
+          showToast(`নতুন ৪ ডিজিটের পোর্টাল পিন সেট হয়েছে: ${newPin}`);
+        }}
+      />
 
     </div>
   );
