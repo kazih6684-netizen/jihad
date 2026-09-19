@@ -165,8 +165,8 @@ export function buildPaginatedItems(staffList: StaffMember[]): PageRenderItem[][
     });
   }
 
-  // Paginate items to fit within available screen space (1320px)
-  const maxContentHeight = 1320;
+  // Paginate items to fit within available screen space (1340px)
+  const maxContentHeight = 1340;
   const pages: PageRenderItem[][] = [];
   let currentPage: PageRenderItem[] = [];
   let currentHeight = 0;
@@ -308,29 +308,9 @@ export async function generatePhoneFrameCanvas(
   ctx.fillStyle = '#ffffff';
   drawRoundedRect(ctx, 36, 36, 1008, 1848, 38, true, false);
 
-  // 4. Smartphone Dynamic Island / Top Camera Notch
-  const notchWidth = 170;
-  const notchHeight = 32;
-  const notchX = (canvasWidth - notchWidth) / 2;
-  const notchY = 48;
-  ctx.fillStyle = '#0f172a';
-  drawRoundedRect(ctx, notchX, notchY, notchWidth, notchHeight, 16, true, false);
-
-  // Speaker & camera reflection
-  ctx.fillStyle = '#1e293b';
-  drawRoundedRect(ctx, notchX + 32, notchY + 11, 48, 10, 5, true, false);
-  ctx.beginPath();
-  ctx.arc(notchX + 120, notchY + 16, 6, 0, Math.PI * 2);
-  ctx.fillStyle = '#1e293b';
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(notchX + 120, notchY + 16, 2.5, 0, Math.PI * 2);
-  ctx.fillStyle = '#38bdf8';
-  ctx.fill();
-
-  // 5. Header Card inside screen
+  // 4. Header Card inside screen (Clean top without camera notch)
   const headerX = 56;
-  const headerY = 96;
+  const headerY = 64;
   const headerW = 968;
   const headerH = 204;
 
@@ -394,7 +374,7 @@ export async function generatePhoneFrameCanvas(
   });
 
   // 6. Table Header (Column headers)
-  const tableHeaderY = 318;
+  const tableHeaderY = 284;
   const tableHeaderH = 46;
   const colSlX = 72;
   const colNameX = 145;
@@ -570,13 +550,13 @@ export async function generatePhoneFrameCanvas(
 
   // Footer Right Content (Verification Stamp)
   ctx.fillStyle = '#0f172a';
-  ctx.font = 'bold 16px "Hind Siliguri", "Inter", sans-serif';
+  ctx.font = 'bold 17px "Hind Siliguri", "Inter", sans-serif';
   ctx.textAlign = 'right';
-  ctx.fillText('Approved by Admin', headerX + headerW - 24, footerY + 42);
+  ctx.fillText('Approved by Admin: Jihadul Islam', headerX + headerW - 24, footerY + 42);
 
-  ctx.fillStyle = '#10b981';
+  ctx.fillStyle = '#059669';
   ctx.font = 'bold 14px "Hind Siliguri", "Inter", sans-serif';
-  ctx.fillText('● Verified & Sealed', headerX + headerW - 24, footerY + 74);
+  ctx.fillText('● Verified & Sealed by Admin (Jihadul Islam)', headerX + headerW - 24, footerY + 74);
 
   // 9. Smartphone Home Indicator Bar
   const barW = 160;

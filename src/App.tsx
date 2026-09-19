@@ -672,34 +672,33 @@ export default function App() {
 
           {/* Right Action Controls */}
           <div className="flex items-center gap-1.5 sm:gap-2">
-            
-            {/* Phone-Frame Official Image & PDF Download Buttons */}
-            <button
-              id="download-image-header-btn"
-              onClick={handleExportImage}
-              disabled={isExporting}
-              className="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white px-2.5 sm:px-3 py-1.5 rounded-xl font-bold text-xs shadow-xs transition-all cursor-pointer disabled:opacity-50"
-              title="বাংলা নাম সহ ফোন ফ্রেমের HD ছবি ডাউনলোড করুন"
-            >
-              {isExporting ? <Loader2 size={13} className="animate-spin" /> : <ImageIcon size={13} />}
-              <span className="hidden sm:inline">ছবি</span>
-              <span className="sm:hidden text-[11px]">ছবি</span>
-            </button>
-
-            <button
-              id="download-pdf-header-btn"
-              onClick={handleExportPdf}
-              disabled={isExporting}
-              className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-2.5 sm:px-3 py-1.5 rounded-xl font-bold text-xs shadow-xs transition-all cursor-pointer disabled:opacity-50"
-              title="বাংলা নাম সহ ফোন ফ্রেম সাইজের অফিশিয়াল PDF ডাউনলোড করুন"
-            >
-              {isExporting ? <Loader2 size={13} className="animate-spin" /> : <FileDown size={13} />}
-              <span className="hidden sm:inline">PDF</span>
-              <span className="sm:hidden text-[11px]">PDF</span>
-            </button>
-
             {isAdmin ? (
               <div className="flex items-center gap-1.5">
+                {/* Admin-only Phone-Frame Official Image & PDF Download Buttons */}
+                <button
+                  id="download-image-header-btn"
+                  onClick={handleExportImage}
+                  disabled={isExporting}
+                  className="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white px-2.5 sm:px-3 py-1.5 rounded-xl font-bold text-xs shadow-xs transition-all cursor-pointer disabled:opacity-50"
+                  title="বাংলা নাম সহ ফোন ফ্রেমের HD ছবি ডাউনলোড করুন (অ্যাডমিন)"
+                >
+                  {isExporting ? <Loader2 size={13} className="animate-spin" /> : <ImageIcon size={13} />}
+                  <span className="hidden sm:inline">ছবি</span>
+                  <span className="sm:hidden text-[11px]">ছবি</span>
+                </button>
+
+                <button
+                  id="download-pdf-header-btn"
+                  onClick={handleExportPdf}
+                  disabled={isExporting}
+                  className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-2.5 sm:px-3 py-1.5 rounded-xl font-bold text-xs shadow-xs transition-all cursor-pointer disabled:opacity-50"
+                  title="বাংলা নাম সহ ফোন ফ্রেম সাইজের অফিশিয়াল PDF ডাউনলোড করুন (অ্যাডমিন)"
+                >
+                  {isExporting ? <Loader2 size={13} className="animate-spin" /> : <FileDown size={13} />}
+                  <span className="hidden sm:inline">PDF</span>
+                  <span className="sm:hidden text-[11px]">PDF</span>
+                </button>
+
                 {/* Admin Portal PIN Change Button */}
                 <button
                   id="portal-pin-settings-btn"
@@ -883,52 +882,57 @@ export default function App() {
           </div>
         </div>
 
-        {/* Neumorphic Official Phone Frame Image & PDF Export Banner */}
-        <div className="neu-flat rounded-2xl p-3.5 sm:p-4 border border-white/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-3.5">
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="w-11 h-11 rounded-2xl neu-inset flex items-center justify-center text-indigo-600 shrink-0">
-              <Smartphone size={22} />
-            </div>
-            <div>
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-xs sm:text-sm font-black text-slate-800 tracking-tight">অফিশিয়াল ফোন ফ্রেম ডিরেক্টরি</span>
-                <span className="bg-emerald-100 text-emerald-800 text-[9px] font-extrabold px-1.5 py-0.5 rounded-md border border-emerald-200">
-                  বাংলা নাম সমর্থিত
-                </span>
-                <span className="bg-indigo-100 text-indigo-800 text-[9px] font-extrabold px-1.5 py-0.5 rounded-md border border-indigo-200">
-                  HD 1080p
-                </span>
+        {/* Neumorphic Official Phone Frame Image & PDF Export Banner - ADMIN ONLY */}
+        {isAdmin && (
+          <div className="neu-flat rounded-2xl p-3.5 sm:p-4 border border-white/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-3.5">
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <div className="w-11 h-11 rounded-2xl neu-inset flex items-center justify-center text-indigo-600 shrink-0">
+                <Smartphone size={22} />
               </div>
-              <p className="text-[11px] text-slate-500 font-medium leading-tight mt-0.5">
-                সব এমপ্লয়িদের বাংলা নাম, পদবী, মেথড ও নাম্বার সহ মোবাইল সাইজ ছবি ও PDF ডাউনলোড করুন
-              </p>
+              <div>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-xs sm:text-sm font-black text-slate-800 tracking-tight">অফিশিয়াল ফোন ফ্রেম ডিরেক্টরি</span>
+                  <span className="bg-amber-100 text-amber-800 text-[9px] font-extrabold px-1.5 py-0.5 rounded-md border border-amber-200">
+                    অ্যাডমিন প্যানেল
+                  </span>
+                  <span className="bg-emerald-100 text-emerald-800 text-[9px] font-extrabold px-1.5 py-0.5 rounded-md border border-emerald-200">
+                    বাংলা নাম সমর্থিত
+                  </span>
+                  <span className="bg-indigo-100 text-indigo-800 text-[9px] font-extrabold px-1.5 py-0.5 rounded-md border border-indigo-200">
+                    HD 1080p
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 font-medium leading-tight mt-0.5">
+                  সব এমপ্লয়িদের বাংলা নাম, পদবী, মেথড ও নাম্বার সহ মোবাইল সাইজ ছবি ও PDF ডাউনলোড করুন
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+              <button
+                id="download-phone-frame-image-btn"
+                onClick={handleExportImage}
+                disabled={isExporting}
+                className="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-50"
+                title="বাংলা নাম স্পষ্ট সহ মোবাইল ফ্রেমের HD ছবি (PNG) ডাউনলোড করুন"
+              >
+                {isExporting ? <Loader2 size={15} className="animate-spin" /> : <ImageIcon size={15} />}
+                <span>ছবি ডাউনলোড</span>
+              </button>
+
+              <button
+                id="download-phone-frame-pdf-btn"
+                onClick={handleExportPdf}
+                disabled={isExporting}
+                className="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl neu-btn-action font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs active:scale-95 cursor-pointer disabled:opacity-50"
+                title="বাংলা নাম স্পষ্ট সহ মোবাইল ফ্রেমের PDF ডাউনলোড করুন"
+              >
+                {isExporting ? <Loader2 size={15} className="animate-spin" /> : <FileDown size={15} />}
+                <span>PDF ডাউনলোড</span>
+              </button>
             </div>
           </div>
-
-          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
-            <button
-              id="download-phone-frame-image-btn"
-              onClick={handleExportImage}
-              disabled={isExporting}
-              className="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-50"
-              title="বাংলা নাম স্পষ্ট সহ মোবাইল ফ্রেমের HD ছবি (PNG) ডাউনলোড করুন"
-            >
-              {isExporting ? <Loader2 size={15} className="animate-spin" /> : <ImageIcon size={15} />}
-              <span>ছবি ডাউনলোড</span>
-            </button>
-
-            <button
-              id="download-phone-frame-pdf-btn"
-              onClick={handleExportPdf}
-              disabled={isExporting}
-              className="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl neu-btn-action font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs active:scale-95 cursor-pointer disabled:opacity-50"
-              title="বাংলা নাম স্পষ্ট সহ মোবাইল ফ্রেমের PDF ডাউনলোড করুন"
-            >
-              {isExporting ? <Loader2 size={15} className="animate-spin" /> : <FileDown size={15} />}
-              <span>PDF ডাউনলোড</span>
-            </button>
-          </div>
-        </div>
+        )}
 
         {/* Directory Listings */}
         {filteredStaff.length === 0 ? (
